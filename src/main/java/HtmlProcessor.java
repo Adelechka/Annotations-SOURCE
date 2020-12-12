@@ -33,9 +33,9 @@ public class HtmlProcessor extends AbstractProcessor {
 
             // получить типы с аннотаций HtmlForm
             Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(HtmlForm.class);
-            List<Input> inputs = new LinkedList<>();
             HashMap<String, Object> attributes = new HashMap<>();
             for (Element element : annotatedElements) {
+                List<Input> inputs = new LinkedList<>();
                 // получаем полный путь для генерации html
                 String path = HtmlProcessor.class.getProtectionDomain().getCodeSource().getLocation().getPath();
                 // User.class -> User.html
@@ -47,13 +47,15 @@ public class HtmlProcessor extends AbstractProcessor {
                 attributes.put("action", annotation.action());
                 Set<? extends Element> annotatedFields = roundEnv.getElementsAnnotatedWith(HtmlInput.class);
                 for (Element element1 : annotatedFields) {
-                    HtmlInput annotation1 = element1.getAnnotation(HtmlInput.class);
-                    Input input = Input.builder()
-                            .type(annotation1.type())
-                            .name(annotation1.name())
-                            .placeholder(annotation1.placeholder())
-                            .build();
-                    inputs.add(input);
+                    if (element.getSimpleName().toString().equals(element1.getEnclosingElement().toString())) {
+                        HtmlInput annotation1 = element1.getAnnotation(HtmlInput.class);
+                        Input input = Input.builder()
+                                .type(annotation1.type())
+                                .name(annotation1.name())
+                                .placeholder(annotation1.placeholder())
+                                .build();
+                        inputs.add(input);
+                    }
                 }
                 attributes.put("inputs", inputs);
                 template.process(attributes, fileWriter);
